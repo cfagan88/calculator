@@ -39,6 +39,12 @@ function App() {
     }
   }
 
+  function deleteAll() {
+    if (calc === "") return;
+    setCalc("");
+    setResult("");
+  }
+
   return (
     <main className="bg-gradient-to-br from-cyan-700 to-slate-800 flex items-center justify-center h-screen">
       <div className="rounded-2xl w-[30vw] min-w-[280px]">
@@ -51,7 +57,7 @@ function App() {
           {calc || 0}
         </div>
 
-        <div className="grid grid-cols-5">
+        <div className="grid grid-cols-6">
           <button
             onClick={() => {
               updateCalc("/");
@@ -91,6 +97,14 @@ function App() {
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             DEL
+          </button>
+          <button
+            onClick={() => {
+              deleteAll();
+            }}
+            className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
+          >
+            CE
           </button>
         </div>
 
