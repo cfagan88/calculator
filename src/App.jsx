@@ -27,8 +27,16 @@ function App() {
   }
 
   function deleteLast() {
-    setCalc(calc.slice(0, -1));
-    // setResult(eval(calc).toString())
+    if (calc === "") return;
+
+    const newCalc = calc.slice(0, -1);
+    setCalc(newCalc);
+
+    if (operators.includes(newCalc.slice(-1))) {
+      setResult(eval(newCalc.toString().slice(0, -1)));
+    } else {
+      setResult(eval(newCalc.toString()));
+    }
   }
 
   return (
@@ -89,6 +97,7 @@ function App() {
         <div className="grid grid-cols-3">
           {digits.map((digit) => (
             <button
+              key={`${digit}`}
               onClick={() => {
                 updateCalc(digit);
               }}
