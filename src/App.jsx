@@ -1,6 +1,11 @@
 import "./index.css";
 import { useState } from "react";
 
+/* Functionality to add:
+  Account for negative numbers
+  Prevent adding a second decimal place, but wont work for adding two numbers both with decimals. e.g. 1.1 + 2.2
+  */
+
 function App() {
   const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
   const operators = ["+", "-", "*", "/", "."];
@@ -11,15 +16,12 @@ function App() {
     if (
       (operators.includes(value) && calc === "") ||
       (operators.includes(value) && operators.includes(calc.slice(-1)))
-    ) {
-      // || (value === "." && calc.includes(".")) - prevents adding a second decimal place, but wont work for adding two numbers both with decimals. e.g. 1.1 + 2.2
+    )
       return;
-    }
+
     setCalc(calc + value);
 
-    if (!operators.includes(value)) {
-      setResult(eval(calc + value).toString()); //eval() takes string and calculates the resulting value
-    }
+    if (!operators.includes(value)) setResult(eval(calc + value).toString()); //eval() takes string and calculates the resulting value
   }
 
   function equals() {
