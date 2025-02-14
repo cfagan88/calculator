@@ -13,38 +13,20 @@ function App() {
   const [result, setResult] = useState("");
 
   function updateCalc(value) {
-    if (
-      (operators.includes(value) && calc === "") ||
-      (operators.includes(value) && operators.includes(calc.slice(-1)))
-    )
-      return;
 
-    setCalc(calc + value);
-
-    if (!operators.includes(value)) setResult(eval(calc + value).toString()); //eval() takes string and calculates the resulting value
   }
 
   function equals() {
-    setCalc(eval(calc).toString());
+    
   }
 
   function deleteLast() {
-    if (calc === "") return;
 
-    const newCalc = calc.slice(0, -1);
-    setCalc(newCalc);
-
-    if (operators.includes(newCalc.slice(-1))) {
-      setResult(eval(newCalc.toString().slice(0, -1)));
-    } else {
-      setResult(eval(newCalc.toString()));
-    }
+    
   }
 
   function deleteAll() {
-    if (calc === "") return;
-    setCalc("");
-    setResult("");
+
   }
 
   return (
