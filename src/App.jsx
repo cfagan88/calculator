@@ -19,7 +19,10 @@ const ACTIONS = {
 function reducer(state, { type, payload }) {
   switch (type) {
     case ACTIONS.ADD_DIGIT:
-      return { ...state, currentOp: `${currentOp || ""}${payload.digit}` };
+      return {
+        ...state,
+        currentOp: `${state.currentOp || ""}${payload.digit}`,
+      };
     case ACTIONS.CHOOSE_OPERATION:
       return {};
     case ACTIONS.CLEAR:
@@ -42,30 +45,38 @@ function App() {
           <div>
             {prevOp} {operation}
           </div>
-          <div>{currentOp}</div>
+          <div>{currentOp || 0}</div>
         </div>
 
         <div className="grid grid-cols-6">
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "/" } });
+            }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             /
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "x" } });
+            }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             x
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "-" } });
+            }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             -
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "+" } });
+            }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             +
@@ -97,16 +108,20 @@ function App() {
             </button>
           ))}
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "." } });
+            }}
             className="bg-[#151515] h-18 rounded-bl-2xl text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
-            0
+            .
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: 0 } });
+            }}
             className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
-            .
+            0
           </button>
           <button
             onClick={() => {}}
