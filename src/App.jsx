@@ -19,6 +19,9 @@ const ACTIONS = {
 function reducer(state, { type, payload }) {
   switch (type) {
     case ACTIONS.ADD_DIGIT:
+      if (state.overwrite) {
+        return { ...state, currentOp: payload.digit, overwrite: false };
+      }
       if (payload.digit === "0" && state.currentOp === "0") return state;
       if (payload.digit === "." && state.currentOp.includes(".")) return state;
       return {
@@ -27,6 +30,9 @@ function reducer(state, { type, payload }) {
       };
     case ACTIONS.CHOOSE_OPERATION:
       if (state.currentOp == null && state.prevOp == null) return state;
+      if (state.currentOp == null) {
+        return { ...state, operation: payload.operation };
+      }
       if (state.prevOp == null) {
         return {
           ...state,
@@ -44,10 +50,36 @@ function reducer(state, { type, payload }) {
 
     case ACTIONS.CLEAR:
       return {};
+
     case ACTIONS.DELETE_DIGIT:
-      return {};
+      if (state.overwrite) {
+        return { ...state, overwrite: false, currentOp: null };
+      }
+
+      if (state.currentOp == null) return state;
+
+      if (state.currentOp.length === 1) {
+        return { ...state, currentOp: null };
+      }
+
+      return { ...state, currentOp: state.currentOp.slice(0, -1) };
+
     case ACTIONS.EQUALS:
-      return {};
+      if (
+        state.operation == null ||
+        state.currentOp == null ||
+        state.prevOp == null
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        overwrite: true,
+        prevOp: null,
+        operation: null,
+        currentOp: evaluate(state),
+      };
   }
 }
 
@@ -85,7 +117,7 @@ function App() {
           <div className="text-gray-500 text-2xl pr-5 pt-3">
             {prevOp} {operation}
           </div>
-          <div className="text-gray-200 pr-5 pb-5 text-5xl">
+          <div className="text-gray-200 pr-5 pb-6 text-5xl">
             {currentOp || 0}
           </div>
         </div>
@@ -136,7 +168,9 @@ function App() {
             +
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.DELETE_DIGIT });
+            }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             DEL
@@ -178,7 +212,9 @@ function App() {
             0
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => {
+              dispatch({ type: ACTIONS.EQUALS });
+            }}
             className="bg-[#151515] h-18 rounded-br-2xl text-gray-200 text-xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
             =
