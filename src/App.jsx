@@ -19,12 +19,29 @@ const ACTIONS = {
 function reducer(state, { type, payload }) {
   switch (type) {
     case ACTIONS.ADD_DIGIT:
+      if (payload.digit === "0" && state.currentOp === "0") return state;
+      if (payload.digit === "." && state.currentOp.includes(".")) return state;
       return {
         ...state,
         currentOp: `${state.currentOp || ""}${payload.digit}`,
       };
     case ACTIONS.CHOOSE_OPERATION:
-      return {};
+      if (state.currentOp == null && state.prevOp == null) return state;
+      if (state.prevOp == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+          prevOp: state.currentOp,
+          currentOp: null,
+        };
+      }
+      return {
+        ...state,
+        prevOp: evaluate(state),
+        operation: payload.operation,
+        currentOp: null,
+      };
+
     case ACTIONS.CLEAR:
       return {};
     case ACTIONS.DELETE_DIGIT:
@@ -34,24 +51,52 @@ function reducer(state, { type, payload }) {
   }
 }
 
+function evaluate({ currentOp, prevOp, operation }) {
+  const prev = parseFloat(prevOp);
+  const curr = parseFloat(currentOp);
+  if (isNaN(prev) || isNaN(curr)) return "";
+  let computation = "";
+
+  switch (operation) {
+    case "+":
+      computation = prev + curr;
+      break;
+    case "-":
+      computation = prev - curr;
+      break;
+    case "x":
+      computation = prev * curr;
+      break;
+    case "/":
+      computation = prev / curr;
+      break;
+  }
+  return computation.toString();
+}
+
 function App() {
-  const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+  const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
   const [{ currentOp, prevOp, operation }, dispatch] = useReducer(reducer, {});
 
   return (
     <main className="bg-gradient-to-br from-cyan-700 to-slate-800 flex items-center justify-center h-screen">
-      <div className="rounded-2xl w-[30vw] min-w-[280px]">
-        <div className="bg-[#151515] rounded-t-2xl text-gray-200 pr-5 py-4 text-right text-5xl">
-          <div>
+      <div className="rounded-2xl w-[25vw] min-w-[350px]">
+        <div className="bg-[#151515] rounded-t-2xl text-right h-30 flex flex-col justify-between">
+          <div className="text-gray-500 text-2xl pr-5 pt-3">
             {prevOp} {operation}
           </div>
-          <div>{currentOp || 0}</div>
+          <div className="text-gray-200 pr-5 pb-5 text-5xl">
+            {currentOp || 0}
+          </div>
         </div>
 
         <div className="grid grid-cols-6">
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "/" } });
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "/" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -59,7 +104,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "x" } });
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "x" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -67,7 +115,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "-" } });
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "-" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -75,7 +126,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "+" } });
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "+" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -88,7 +142,7 @@ function App() {
             DEL
           </button>
           <button
-            onClick={() => {}}
+            onClick={() => dispatch({ type: ACTIONS.CLEAR })}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             CE
@@ -117,7 +171,7 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: 0 } });
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "0" } });
             }}
             className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
