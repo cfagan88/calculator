@@ -1,68 +1,134 @@
 import "./index.css";
-import { useState } from "react";
+import { useReducer } from "react";
 
 /* Functionality to add:
   Account for negative numbers
   Prevent adding a second decimal place, but wont work for adding two numbers both with decimals. e.g. 1.1 + 2.2
   */
 
+// https://www.youtube.com/watch?v=DgRrrOt0Vr8&t=550s
+
+const ACTIONS = {
+  ADD_DIGIT: "add-digit",
+  CHOOSE_OPERATION: "choose-operation",
+  CLEAR: "clear",
+  DELETE_DIGIT: "delete-digit",
+  EQUALS: "equals",
+};
+
+function reducer(state, { type, payload }) {
+  switch (type) {
+    case ACTIONS.ADD_DIGIT:
+      if (state.overwrite) {
+        return { ...state, currentOp: payload.digit, overwrite: false };
+      }
+      if (payload.digit === "0" && state.currentOp === "0") return state;
+      if (payload.digit === "." && state.currentOp.includes(".")) return state;
+      return {
+        ...state,
+        currentOp: `${state.currentOp || ""}${payload.digit}`,
+      };
+    case ACTIONS.CHOOSE_OPERATION:
+      if (state.currentOp == null && state.prevOp == null) return state;
+      if (state.currentOp == null) {
+        return { ...state, operation: payload.operation };
+      }
+      if (state.prevOp == null) {
+        return {
+          ...state,
+          operation: payload.operation,
+          prevOp: state.currentOp,
+          currentOp: null,
+        };
+      }
+      return {
+        ...state,
+        prevOp: evaluate(state),
+        operation: payload.operation,
+        currentOp: null,
+      };
+
+    case ACTIONS.CLEAR:
+      return {};
+
+    case ACTIONS.DELETE_DIGIT:
+      if (state.overwrite) {
+        return { ...state, overwrite: false, currentOp: null };
+      }
+
+      if (state.currentOp == null) return state;
+
+      if (state.currentOp.length === 1) {
+        return { ...state, currentOp: null };
+      }
+
+      return { ...state, currentOp: state.currentOp.slice(0, -1) };
+
+    case ACTIONS.EQUALS:
+      if (
+        state.operation == null ||
+        state.currentOp == null ||
+        state.prevOp == null
+      ) {
+        return state;
+      }
+
+      return {
+        ...state,
+        overwrite: true,
+        prevOp: null,
+        operation: null,
+        currentOp: evaluate(state),
+      };
+  }
+}
+
+function evaluate({ currentOp, prevOp, operation }) {
+  const prev = parseFloat(prevOp);
+  const curr = parseFloat(currentOp);
+  if (isNaN(prev) || isNaN(curr)) return "";
+  let computation = "";
+
+  switch (operation) {
+    case "+":
+      computation = prev + curr;
+      break;
+    case "-":
+      computation = prev - curr;
+      break;
+    case "x":
+      computation = prev * curr;
+      break;
+    case "/":
+      computation = prev / curr;
+      break;
+  }
+  return computation.toString();
+}
+
 function App() {
-  const digits = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-  const operators = ["+", "-", "*", "/", "."];
-  const [calc, setCalc] = useState("");
-  const [result, setResult] = useState("");
-
-  function updateCalc(value) {
-    if (
-      (operators.includes(value) && calc === "") ||
-      (operators.includes(value) && operators.includes(calc.slice(-1)))
-    )
-      return;
-
-    setCalc(calc + value);
-
-    if (!operators.includes(value)) setResult(eval(calc + value).toString()); //eval() takes string and calculates the resulting value
-  }
-
-  function equals() {
-    setCalc(eval(calc).toString());
-  }
-
-  function deleteLast() {
-    if (calc === "") return;
-
-    const newCalc = calc.slice(0, -1);
-    setCalc(newCalc);
-
-    if (operators.includes(newCalc.slice(-1))) {
-      setResult(eval(newCalc.toString().slice(0, -1)));
-    } else {
-      setResult(eval(newCalc.toString()));
-    }
-  }
-
-  function deleteAll() {
-    if (calc === "") return;
-    setCalc("");
-    setResult("");
-  }
+  const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9"];
+  const [{ currentOp, prevOp, operation }, dispatch] = useReducer(reducer, {});
 
   return (
     <main className="bg-gradient-to-br from-cyan-700 to-slate-800 flex items-center justify-center h-screen">
-      <div className="rounded-2xl w-[30vw] min-w-[280px]">
-        <div className="bg-[#151515] rounded-t-2xl text-gray-200 pr-5 py-4 text-right text-5xl">
-          {result ? (
-            <span className="text-gray-500 text-xl">({result})</span>
-          ) : (
-            ""
-          )}{" "}
-          {calc || 0}
+      <div className="rounded-2xl w-[25vw] min-w-[350px]">
+        <div className="bg-[#151515] rounded-t-2xl text-right h-30 flex flex-col justify-between">
+          <div className="text-gray-500 text-2xl pr-5 pt-3">
+            {prevOp} {operation}
+          </div>
+          <div className="text-gray-200 pr-5 pb-6 text-5xl">
+            {currentOp || 0}
+          </div>
         </div>
 
         <div className="grid grid-cols-6">
           <button
             onClick={() => {
-              updateCalc("/");
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "/" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -70,7 +136,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              updateCalc("*");
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "x" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -78,7 +147,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              updateCalc("-");
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "-" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -86,7 +158,10 @@ function App() {
           </button>
           <button
             onClick={() => {
-              updateCalc("+");
+              dispatch({
+                type: ACTIONS.CHOOSE_OPERATION,
+                payload: { operation: "+" },
+              });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
@@ -94,16 +169,14 @@ function App() {
           </button>
           <button
             onClick={() => {
-              deleteLast();
+              dispatch({ type: ACTIONS.DELETE_DIGIT });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             DEL
           </button>
           <button
-            onClick={() => {
-              deleteAll();
-            }}
+            onClick={() => dispatch({ type: ACTIONS.CLEAR })}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             CE
@@ -115,32 +188,32 @@ function App() {
             <button
               key={`${digit}`}
               onClick={() => {
-                updateCalc(digit);
+                dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
               }}
               className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
             >
-              {digit.toString()}
+              {digit}
             </button>
           ))}
           <button
             onClick={() => {
-              updateCalc("0");
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "." } });
             }}
             className="bg-[#151515] h-18 rounded-bl-2xl text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
-          >
-            0
-          </button>
-          <button
-            onClick={() => {
-              updateCalc(".");
-            }}
-            className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
             .
           </button>
           <button
             onClick={() => {
-              equals();
+              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "0" } });
+            }}
+            className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
+          >
+            0
+          </button>
+          <button
+            onClick={() => {
+              dispatch({ type: ACTIONS.EQUALS });
             }}
             className="bg-[#151515] h-18 rounded-br-2xl text-gray-200 text-xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
