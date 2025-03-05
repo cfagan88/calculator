@@ -1,13 +1,6 @@
 import "./index.css";
 import { useReducer } from "react";
 
-/* Functionality to add:
-  Account for negative numbers
-  Prevent adding a second decimal place, but wont work for adding two numbers both with decimals. e.g. 1.1 + 2.2
-  */
-
-// https://www.youtube.com/watch?v=DgRrrOt0Vr8&t=550s
-
 const ACTIONS = {
   ADD_DIGIT: "add-digit",
   CHOOSE_OPERATION: "choose-operation",
