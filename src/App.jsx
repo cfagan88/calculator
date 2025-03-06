@@ -1,27 +1,25 @@
 import "./index.css";
 import { useReducer } from "react";
 
-const ACTIONS = {
-  ADD_DIGIT: "add-digit",
-  CHOOSE_OPERATION: "choose-operation",
-  CLEAR: "clear",
-  DELETE_DIGIT: "delete-digit",
-  EQUALS: "equals",
-};
-
 function reducer(state, { type, payload }) {
   switch (type) {
-    case ACTIONS.ADD_DIGIT:
+    case "add-digit":
       if (state.overwrite) {
         return { ...state, currentOp: payload.digit, overwrite: false };
       }
       if (payload.digit === "0" && state.currentOp === "0") return state;
+      if (
+        payload.digit === "." &&
+        (state.currentOp === "" || state.currentOp == null)
+      ) {
+        return { ...state, currentOp: "0." };
+      }
       if (payload.digit === "." && state.currentOp.includes(".")) return state;
       return {
         ...state,
         currentOp: `${state.currentOp || ""}${payload.digit}`,
       };
-    case ACTIONS.CHOOSE_OPERATION:
+    case "choose-operation":
       if (state.currentOp == null && state.prevOp == null) return state;
       if (state.currentOp == null) {
         return { ...state, operation: payload.operation };
@@ -41,10 +39,10 @@ function reducer(state, { type, payload }) {
         currentOp: null,
       };
 
-    case ACTIONS.CLEAR:
+    case "clear":
       return {};
 
-    case ACTIONS.DELETE_DIGIT:
+    case "delete-digit":
       if (state.overwrite) {
         return { ...state, overwrite: false, currentOp: null };
       }
@@ -57,7 +55,7 @@ function reducer(state, { type, payload }) {
 
       return { ...state, currentOp: state.currentOp.slice(0, -1) };
 
-    case ACTIONS.EQUALS:
+    case "equals":
       if (
         state.operation == null ||
         state.currentOp == null ||
@@ -119,7 +117,7 @@ function App() {
           <button
             onClick={() => {
               dispatch({
-                type: ACTIONS.CHOOSE_OPERATION,
+                type: "choose-operation",
                 payload: { operation: "/" },
               });
             }}
@@ -130,7 +128,7 @@ function App() {
           <button
             onClick={() => {
               dispatch({
-                type: ACTIONS.CHOOSE_OPERATION,
+                type: "choose-operation",
                 payload: { operation: "x" },
               });
             }}
@@ -141,7 +139,7 @@ function App() {
           <button
             onClick={() => {
               dispatch({
-                type: ACTIONS.CHOOSE_OPERATION,
+                type: "choose-operation",
                 payload: { operation: "-" },
               });
             }}
@@ -152,7 +150,7 @@ function App() {
           <button
             onClick={() => {
               dispatch({
-                type: ACTIONS.CHOOSE_OPERATION,
+                type: "choose-operation",
                 payload: { operation: "+" },
               });
             }}
@@ -162,14 +160,14 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.DELETE_DIGIT });
+              dispatch({ type: "delete-digit" });
             }}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             DEL
           </button>
           <button
-            onClick={() => dispatch({ type: ACTIONS.CLEAR })}
+            onClick={() => dispatch({ type: "clear" })}
             className="bg-[#692100] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#772e0c]"
           >
             CE
@@ -181,7 +179,7 @@ function App() {
             <button
               key={`${digit}`}
               onClick={() => {
-                dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit } });
+                dispatch({ type: "add-digit", payload: { digit } });
               }}
               className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
             >
@@ -190,7 +188,7 @@ function App() {
           ))}
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "." } });
+              dispatch({ type: "add-digit", payload: { digit: "." } });
             }}
             className="bg-[#151515] h-18 rounded-bl-2xl text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
@@ -198,7 +196,7 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.ADD_DIGIT, payload: { digit: "0" } });
+              dispatch({ type: "add-digit", payload: { digit: "0" } });
             }}
             className="bg-[#151515] h-18 text-gray-200 text-2xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
@@ -206,7 +204,7 @@ function App() {
           </button>
           <button
             onClick={() => {
-              dispatch({ type: ACTIONS.EQUALS });
+              dispatch({ type: "equals" });
             }}
             className="bg-[#151515] h-18 rounded-br-2xl text-gray-200 text-xl font-bold border-1 border-border-solid border-black cursor-pointer hover:bg-[#252525]"
           >
